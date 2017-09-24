@@ -1,0 +1,46 @@
+﻿@model Projeto.EncontrarDiretorioServidor.Models.DiretorioModel
+@{
+    ViewBag.Title = "Index";
+}
+
+<br /><br />
+<div class="container">
+    <div class="col-md-8 col-md-offset-2 col-sm-8 col-sm-offset-2">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <div class="panel-title">Listar Arquivos</div>
+            </div>
+            <div class="panel-body">
+                <form class="form-horizontal" method="post">
+                    <div class="row">
+                        <div class="form-group row" style="padding-left:15px;padding-right:15px">
+                            <div class="col-md-3 col-lg-3" style="height:45px;">
+                                @Html.LabelFor(m => Model.CaminhoDiretorio, new { @style = "margin-top:10px" })
+                            </div>
+                            <div class="col-md-9 col-lg-9">
+                                <div class="input-group col-md-12 col-lg-12">
+                                    @Html.TextBoxFor(m => Model.CaminhoDiretorio, new { @id="txtCaminhoPrincipal", @class = "form-control input-lg" })
+                                    <span id="btnModalDiretorio" class="input-group-addon glyphicon glyphicon-folder-open" style="top:0px"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" style="margin-top:50px;height:600px;">
+
+</div>
+
+<script>
+    $(function () {
+        $("#btnModalDiretorio").click(function () {
+            $("#modal").load("Home/FolderDialog", function () {
+                $("#modal").modal();
+            });
+        });
+    })
+</script>

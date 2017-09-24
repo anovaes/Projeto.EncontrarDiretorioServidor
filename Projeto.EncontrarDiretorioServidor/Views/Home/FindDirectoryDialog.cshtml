@@ -1,0 +1,169 @@
+﻿@model Projeto.EncontrarDiretorioServidor.Models.DiretorioModel
+
+<style>
+    .table-fixed thead {
+        width: 97%;
+    }
+
+    .table-fixed tbody {
+        height: 300px;
+        overflow-y: auto;
+        width: 100%;
+    }
+
+    .table-fixed thead, .table-fixed tbody, .table-fixed tr, .table-fixed td, .table-fixed th {
+        display: block;
+    }
+
+    .table-fixed tbody td, .table-fixed thead > tr > th {
+        border-bottom-width: 0;
+    }
+</style>
+
+<input type="hidden" id="hdnCaminhoRaiz" value="@Model.CaminhoRaiz" />
+<input type="hidden" id="hdnCaminhoDiretorioPai" value="@Model.CaminhoDiretorioPai" />
+<div class="modal-dialog">
+    <div class="modal-content" style="background-color:#e6e6e6">
+        <div class="modal-header">
+            <label class="modal-title">Selecione...</label>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-xs-2 col-lg-2" style="height:45px;">
+                        <label style="margin-top:10px;">Olhando:</label>
+                    </div>
+                    <div class="col-xs-8 col-lg-8">
+                        @Html.TextBoxFor(m => Model.CaminhoDiretorio, new { @id="txtCaminhoDiretorio", @class = "form-control", @readonly = "readonly" })
+                    </div>
+                    <div class="col-xs-2 col-lg-2">
+                        <a id="btnDiretorioPai" class="btn btn-default">
+                            <span class="glyphicon glyphicon-level-up"></span>
+                        </a>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-xs-12 col-lg-12" style="padding-left:15px;padding-right:15px;">
+                        <table class="table table-hover table-fixed" style="background-color:white;margin-bottom:0px;">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-1 col-md-1">
+                                        ...
+                                    </th>
+                                    <th class="col-lg-11 col-md-11">
+                                        Nome
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Diretorios)
+                                {
+                                    <tr class="diretorio" data-raiz="@Model.CaminhoDiretorio" data-diretorio="@item.Nome">
+                                        <td class="col-lg-1 col-md-1">
+                                            <i class="@item.Icone" aria-hidden="true"></i>
+                                        </td>
+                                        <td class="col-lg-11 col-md-11">
+                                            @Html.DisplayFor(modelItem => item.Nome)
+                                        </td>
+                                    </tr>
+                                }
+
+                                @foreach (var item in Model.Arquivos)
+                                {
+                                    <tr class="arquivo" data-raiz="@Model.CaminhoDiretorio" data-arquivo="@item.Nome">
+                                        <td class="col-lg-1 col-md-1">
+                                            <i class="@item.Icone" aria-hidden="true"></i>
+                                        </td>
+                                        <td class="col-lg-11 col-md-11">
+                                            @Html.DisplayFor(modelItem => item.Nome)
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="modal-footer">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-xs-1 col-lg-1" style="height:45px;">
+                        <label style="margin-top:10px;">Nome:</label>
+                    </div>
+                    <div class="col-xs-8 col-lg-8">
+                        <input type="text" id="txtArquivoSelecionado" class="form-control" readonly="readonly" />
+                        <input type="hidden" id="hdnDiretorioSelecionado" />
+                    </div>
+                    <div class="col-xs-3 col-lg-3">
+                        <a class="btn btn-primary" id="btnSelecionarArquivo" href="#" role="button">Selecionar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#txtCaminhoDiretorio").keypress(function (e) {
+            var code = e.keyCode || e.which
+            if (code == 13) {
+                PesquisaDiretorio($(this).val(), "");
+            }
+        });
+
+        $('.diretorio').dblclick(function () {
+            var raiz = $(this).attr("data-raiz");
+            var diretorio = $(this).attr("data-diretorio");
+
+            PesquisaDiretorio(raiz, diretorio);
+        });
+
+        $('.arquivo').dblclick(function () {
+            var raiz = $(this).attr("data-raiz");
+            var arquivo = $(this).attr("data-arquivo");
+
+            $('#txtCaminhoPrincipal').val(raiz + "\\" + arquivo);
+            $('#modal').modal('hide')
+        });
+
+        $('.arquivo').click(function () {
+            $('#hdnDiretorioSelecionado').val($(this).attr("data-raiz"));
+            $('#txtArquivoSelecionado').val($(this).attr("data-arquivo"));
+        });
+
+        $('#btnSelecionarArquivo').click(function () {
+            var raiz = $('#hdnDiretorioSelecionado').val();
+            var arquivo = $('#txtArquivoSelecionado').val();
+
+            $('#txtCaminhoPrincipal').val(raiz + "\\" + arquivo);
+            $('#modal').modal('hide')
+        });
+
+        $('#btnDiretorioPai').click(function () {
+            PesquisaDiretorio($("#hdnCaminhoDiretorioPai").val(), "");
+        });
+
+        function PesquisaDiretorio(caminhoAtual, diretorioSelecionado) {
+            var caminhoRaiz = $("#hdnCaminhoRaiz").val();
+
+            if (caminhoAtual.indexOf(caminhoRaiz) == -1) {
+                return;
+            }
+
+            var url = 'Home/FindDirectoryDialog';
+            var dados = { raiz: caminhoAtual, diretorio: diretorioSelecionado };
+
+            $.get(url, dados, function (data) {
+                $("#modal").html(data);
+            });
+        }
+    });
+</script>
+
