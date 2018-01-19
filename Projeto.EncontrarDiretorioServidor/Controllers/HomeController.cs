@@ -31,6 +31,13 @@ namespace Projeto.EncontrarDiretorioServidor.Controllers
             return RedirectToAction("FindDirectoryDialog", new { raiz = ConfigurationManager.AppSettings["DiretorioRaiz"]?.ToString(), diretorio = " " });
         }
 
+        [HttpPost]
+        public ActionResult OpenFile(DiretorioModel model)
+        {
+            System.Diagnostics.Process.Start(model.CaminhoDiretorio);
+            return RedirectToAction("Index");
+        }
+
         public PartialViewResult FindDirectoryDialog(string raiz, string diretorio)
         {
             DiretorioModel model = ObterConteudoDiretorio(CombinaPath(raiz, diretorio));
